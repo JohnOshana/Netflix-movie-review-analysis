@@ -115,7 +115,6 @@ string getDate(){
   return reviewDate;
 }
 
-//Setters
 };
 
 int main()
