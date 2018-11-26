@@ -167,8 +167,6 @@ void movieInfo(std::map<int, Movie> movieMap, std::map<int, Review> reviewMap){
         if(iter == reviewMap.end())
           cout << endl << "review not found..." << endl;
         else{
-          auto key = iter->first;
-          auto value = iter->second;
           auto movieIter = movieMap.find(iter->second.getMovieID());
           cout << endl << "Movie: " << iter->second.getMovieID() << " (" << movieIter->second.getMovieName() << ")" << endl;
           cout << "Num stars: " << iter->second.getRating() << endl;
