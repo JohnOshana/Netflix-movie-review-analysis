@@ -4,6 +4,10 @@
 // Netflix movie review analysis.
 //
 // John Oshana
+// U. of Illinois, Chicago
+// CS 341: Fall 2018
+// Project 02
+//
 
 #include <iostream>
 #include <fstream>
@@ -19,9 +23,9 @@ using namespace std;
 class Movie{
   private:
 
-  int movieID, pubYear, numReviews;
+  int    movieID, pubYear, numReviews;
+  int    ratings[5];
   string movieName;
-  int ratings[5];
   double avgRatings;
 
   public:
@@ -84,7 +88,7 @@ if(getNumReviews()!=0){
 class Review{
   private:
 
-  int reviewID, movieID, userID, rating;
+  int    reviewID, movieID, userID, rating;
   string reviewDate;
 
   public:
@@ -111,11 +115,74 @@ string getDate(){
   return reviewDate;
 }
 
+//Setters
 };
+
+// Takes the sorted movie vector and displays the top-ten movies
+// along with their ratings
+void displayTopTen(std::vector<Movie> m){
+
+  cout << ">> Top-10 Movies <<" << endl;
+  cout << endl << "Rank\tID\tReviews\tAvg\tName" << endl;
+
+	for (int i = 0; i < 10; i++)
+  cout << i + 1 << ".\t" << m.at(i).getMovieID() << "\t" << m.at(i).getNumReviews() << "\t" << m.at(i).getAvgRating() << "\t" << "\"" << m.at(i).getMovieName() << "\""<< endl;
+}
+
+// Allows a user to search for a specific movie or review
+// by typing their movie/review ID and will display the information
+// of the movie/review
+void movieInfo(std::map<int, Movie> movieMap, std::map<int, Review> reviewMap){
+
+  int userInput;
+
+  cout << endl << ">> Movie and Review Information <<" << endl << endl;
+  cout << "Please enter a movie ID (< 10,000), a review ID (>= 100,000), 0 to stop> ";
+  cin >> userInput;
+
+  while(userInput!=0){
+    if(userInput < 0){
+      cout << endl << "**invalid id..." << endl;
+    }
+//movies if...
+    if(userInput < 100000){
+      auto iter = movieMap.find(userInput);
+        if(iter == movieMap.end())
+          cout << endl << "movie not found..." << endl;
+        else{
+          cout << endl << "Movie:\t\t" << "'" << iter->second.getMovieName() << "'" << endl;
+          cout << "Year:\t\t" << iter->second.getYear() << endl;
+          cout << "Average rating: " << iter->second.getAvgRating() << endl;
+          cout << "Num Reviews:\t" << iter->second.getNumReviews() << endl;
+          cout << " 1 star: \t" << iter->second.getStars(1) << endl;
+          cout << " 2 stars: \t" << iter->second.getStars(2) << endl;
+          cout << " 3 stars: \t" << iter->second.getStars(3) << endl;
+          cout << " 4 stars: \t" << iter->second.getStars(4) << endl;
+          cout << " 5 stars: \t" << iter->second.getStars(5) << endl;
+  }
+    }
+//reviews if...
+    if(userInput >= 100000){
+      auto iter = reviewMap.find(userInput);
+        if(iter == reviewMap.end())
+          cout << endl << "review not found..." << endl;
+        else{
+          auto key = iter->first;
+          auto value = iter->second;
+          auto movieIter = movieMap.find(iter->second.getMovieID());
+          cout << endl << "Movie: " << iter->second.getMovieID() << " (" << movieIter->second.getMovieName() << ")" << endl;
+          cout << "Num stars: " << iter->second.getRating() << endl;
+          cout << "User ID:   " << iter->second.getUserID() << endl;
+          cout << "Date:      " << iter->second.getDate() << endl;
+  }
+    }
+    cout << endl << "Please enter a movie ID (< 10,000), a review ID (>= 100,000), 0 to stop> ";
+    cin >> userInput;
+  }
+}
 
 int main()
 {
-  int userInput;
   std::map<int, Movie> movieMap;
   std::map<int, Review> reviewMap;
 
@@ -189,23 +256,21 @@ int main()
     if(iter == movieMap.end())
       break;
     else{
-      auto key = iter->first;
-      auto value = iter->second;
       iter->second.totalUpReviews();
       iter->second.setRatings(thisRating);
   }
 }
 
 //vector for top-10 movies
-std::vector<Movie> m;
+std::vector<Movie> movieVec;
 
 for(auto& p : movieMap){
   p.second.calculateAvgRating();
-  m.push_back(p.second);
+  movieVec.push_back(p.second);
 }
 
-//sort movies by rating number
-	sort(m.begin(), m.end(),
+//sort movies by rating number and if the ratings are equal sort by name
+	sort(movieVec.begin(), movieVec.end(),
 		[&](Movie m1, Movie m2) {
 		if (m1.getAvgRating() > m2.getAvgRating())
 			return true;
@@ -221,57 +286,11 @@ for(auto& p : movieMap){
 
   cout << ">> Reading movies... " << movieMap.size() << endl;
   cout << ">> Reading reviews... " << reviewMap.size() << endl << endl;
-  cout << ">> Top-10 Movies <<" << endl;
-  cout << endl << "Rank\tID\tReviews\tAvg\tName" << endl;
 
-	for (int i = 0; i < 10; i++)
-  cout << i + 1 << ".\t" << m.at(i).getMovieID() << "\t" << m.at(i).getNumReviews() << "\t" << m.at(i).getAvgRating() << "\t" << "\"" << m.at(i).getMovieName() << "\""<< endl;
+  displayTopTen(movieVec);
+  movieInfo(movieMap, reviewMap);
 
-  cout << endl << ">> Movie and Review Information <<" << endl << endl;
-  cout << "Please enter a movie ID (< 10,000), a review ID (>= 100,000), 0 to stop> ";
-  cin >> userInput;
 
-  while(userInput!=0){
-    if(userInput < 0){
-      cout << endl << "**invalid id..." << endl;
-    }
-//movies if...
-    if(userInput < 100000){
-      auto iter = movieMap.find(userInput);
-        if(iter == movieMap.end())
-          cout << endl << "movie not found..." << endl;
-        else{
-          auto key = iter->first;
-          auto value = iter->second;
-          cout << endl << "Movie:\t\t" << "'" << iter->second.getMovieName() << "'" << endl;
-          cout << "Year:\t\t" << iter->second.getYear() << endl;
-          cout << "Average rating: " << iter->second.getAvgRating() << endl;
-          cout << "Num Reviews:\t" << iter->second.getNumReviews() << endl;
-          cout << " 1 star: \t" << iter->second.getStars(1) << endl;
-          cout << " 2 stars: \t" << iter->second.getStars(2) << endl;
-          cout << " 3 stars: \t" << iter->second.getStars(3) << endl;
-          cout << " 4 stars: \t" << iter->second.getStars(4) << endl;
-          cout << " 5 stars: \t" << iter->second.getStars(5) << endl;
-  }
-    }
-//reviews if...
-    if(userInput >= 100000){
-      auto iter = reviewMap.find(userInput);
-        if(iter == reviewMap.end())
-          cout << endl << "review not found..." << endl;
-        else{
-          auto key = iter->first;
-          auto value = iter->second;
-          auto movieIter = movieMap.find(iter->second.getMovieID());
-          cout << endl << "Movie: " << iter->second.getMovieID() << " (" << movieIter->second.getMovieName() << ")" << endl;
-          cout << "Num stars: " << iter->second.getRating() << endl;
-          cout << "User ID:   " << iter->second.getUserID() << endl;
-          cout << "Date:      " << iter->second.getDate() << endl;
-  }
-    }
-    cout << endl << "Please enter a movie ID (< 10,000), a review ID (>= 100,000), 0 to stop> ";
-    cin >> userInput;
-  }
   //
   // done:
   //
